@@ -1,24 +1,63 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import {
+  getNames,
+  initializeNames,
+  addName,
+  removeName
+} from './local-storage.js';
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+// render whatever names are in localStorage
+const renderNames = () => {
+  // grab the ul
+  const ul = document.querySelector("ul#names-list")
 
-setupCounter(document.querySelector('#counter'))
+  // empty the ul
+  ul.innerHTML = '';
+
+  // get Array of names from localStorage
+  const names = getNames();
+
+  // for each name in the array, make it an li and append to the ul
+  names.forEach((name) => {
+    const li = document.createElement('li');
+    li.textContent = name;
+    ul.append(li);
+  });
+}
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const form = e.target;
+
+  // grab the form data
+  const newName = form.name.value
+
+  // do something with that data
+  addName(newName); // update localStorage
+  renderNames();  // re-render the whole list
+
+  // reset the form
+  form.reset();
+}
+
+// delegation
+const handleRemoveName = (e) => {
+  if (e.target.matches('li')) {
+    const nameToRemove = e.target.innerText;
+    removeName(nameToRemove); // update localStorage
+    renderNames(); // re render the whole list
+  }
+}
+
+const main = () => {
+  // the very first time the user loads this, add names to localStorage
+  if (!getNames()) initializeNames();
+
+  // 1. render the existing names
+  renderNames();
+
+  // 2. attach the form event handler
+  document.querySelector('form').addEventListener('submit', handleSubmit);
+  document.querySelector('ul').addEventListener('click', handleRemoveName);
+}
+
+main();
